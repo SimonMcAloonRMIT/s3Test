@@ -47,7 +47,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
     .createReadStream()
     .pipe(res)
     .on('finish', function() {
-        util.log('download competed.');
+        util.log(filename + ' - downloaded OK!');
     });    
 
 });
@@ -121,7 +121,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
     //     }
     //     console.log('WRITING FILES DONE!');
 
-        util.log('ready to create PDF');
+        util.log('Getting images for PDF');
 
         // Generate PDF
         // -----------
