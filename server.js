@@ -90,7 +90,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
             fileContentList.add(data.Body);
             //console.log(results[index]);
 
-            console.log(data.Body);
+            //console.log(data.Body);
 
    
 
@@ -102,7 +102,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
 
         console.log('WRITING FILES STARTED...');
         for(var i = 0; i < fileContentList.length; i++ ) {
-            console.log(fileContentList.get(i));
+            //console.log(fileContentList.get(i));
 
             var path = 'cache/image-' + i + '.jpg',
          
@@ -137,7 +137,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
             util.log('\x1b[32m%s\x1b[0m', 'PDF generated OK! - and returned');  
 
             // clean up filess
-            util.log('Deleting cache files started...');
+            util.log('Deleting cache files');
             for(var i = 0; i < fileContentList.length; i++) {
 
                 //var filenameArr = array[i].split(".");
@@ -146,7 +146,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
                 fs.unlink(__dirname + "/cache/image-" + i + ".jpg", function (err) {
                     if (err) throw err;
                     // if no error, file has been deleted successfully
-                    console.log('File deleted!');
+                    //console.log('File deleted!');
                 }); 
             }    
         });            
@@ -156,9 +156,6 @@ app.use('/cache', express.static(__dirname + '/cache'));
     .catch(function(err) {
         util.log(err);
     });
-
-    //res.send('done');
-
 });
 
 // code from project
