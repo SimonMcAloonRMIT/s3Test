@@ -8,7 +8,6 @@ var pdf = require('html-pdf');
 
 var app = express();
 
-
 // init
 var server = app.listen(3003, function () {
     var host = server.address().address
@@ -27,15 +26,11 @@ app.get('/', function (req, res) {
 app.use('/cache', express.static(__dirname + '/cache'));
 
  // getImageFromCache
- app.get('/getImageFromCache', function(req, res) {
+//  app.get('/getImageFromCache', function(req, res) {
 
-    var filename = req.query.img
-    res.sendFile(__dirname + "/cache/" + filename);
-});
-
-
-
-
+//     var filename = req.query.img
+//     res.sendFile(__dirname + "/cache/" + filename);
+// });
 
  app.get('/getFiles', function (req, res) {
     util.log('-------------');
@@ -44,9 +39,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
     // Test data
     // ---------
     // generate uuid
-    var uuid = uuidv4();
-
-    uuid = uuid + ".";
+    var uuid = uuidv4() + ".";
 
     console.log('DOWNLOADS STARTED...');
 
@@ -78,7 +71,6 @@ app.use('/cache', express.static(__dirname + '/cache'));
     
     for(var i = 0; i < fileNameList.length; i++){
         promises.push(getObject(fileNameList.get(i)));
-
         util.log('getting image - ' + fileNameList.get(i));
     }
     
@@ -99,7 +91,10 @@ app.use('/cache', express.static(__dirname + '/cache'));
         for(var i = 0; i < fileContentList.length; i++ ) {
             //console.log(fileContentList.get(i));
 
-            var path = 'cache/' + fileContentList.get(i).Filename,
+            var filenameArr = fileContentList.get(i).Filename.split(".");
+            var filename = filenameArr[0] + "-" + uuid + filenameArr[1];
+
+            var path = 'cache/' + filename;
          
             fs = require('fs');
             fs.writeFileSync(path, fileContentList.get(i).Body);        
@@ -114,12 +109,12 @@ app.use('/cache', express.static(__dirname + '/cache'));
 
         for(var i = 0; i < fileContentList.length; i++) {
 
-            //var filenameArr = array[i].split(".");
-            //var filename = filenameArr[0] + "-" + uuid + filenameArr[1];
+            var filenameArr = fileContentList.get(i).Filename.split(".");
+            var filename = filenameArr[0] + "-" + uuid + filenameArr[1];
 
             content += "<div>" + fileContentList.get(i).Filename + "</div>";
             //content += "<img style='width: 200px;' src='http://localhost:3002/getImageFromCache?img=" + filename + "' /><br /><br />"; // using API
-            content += "<img style='width: 200px;' src='http://localhost:3003/cache/" + fileContentList.get(i).Filename + "' /><br /><br />"; // using static location
+            content += "<img style='width: 200px;' src='http://localhost:3003/cache/" + filename + "' /><br /><br />"; // using static location
         }
 
         var html = content;
@@ -135,10 +130,10 @@ app.use('/cache', express.static(__dirname + '/cache'));
             util.log('Deleting cache files');
             for(var i = 0; i < fileContentList.length; i++) {
 
-                //var filenameArr = array[i].split(".");
-                //var filename = filenameArr[0] + "-" + uuid + filenameArr[1];    
+                var filenameArr = fileContentList.get(i).Filename.split(".");
+                var filename = filenameArr[0] + "-" + uuid + filenameArr[1]; 
 
-                fs.unlink(__dirname + "/cache/" + fileContentList.get(i).Filename, function (err) {
+                fs.unlink(__dirname + "/cache/" + filename, function (err) {
                     if (err) throw err;
                     // if no error, file has been deleted successfully
                     //console.log('File deleted!');
