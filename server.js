@@ -8,9 +8,6 @@ var pdf = require('html-pdf');
 
 var app = express();
 
-var fileNameList = new ArrayList();
-
-fileNameList.add(['image0.jpg','image1.gif','image2.jpg','image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.png','image8.png','image9.jpg','image10.jpg','image11.jpg','image12.jpg','image13.jpg']);
 
 // init
 var server = app.listen(3003, function () {
@@ -51,7 +48,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
 
     uuid = uuid + ".";
 
-    console.log('DOWNLOADS STARTED');
+    console.log('DOWNLOADS STARTED...');
 
     var s3 = new AWS.S3();
 
@@ -63,6 +60,8 @@ app.use('/cache', express.static(__dirname + '/cache'));
                     if(error) {
                         reject(error);
                     } else {
+                        data.Filename = imageNmae;
+                        //console.log(data);
                         success(data);
                         util.log(imageNmae + ' - file downloaded');
                     }
@@ -73,9 +72,9 @@ app.use('/cache', express.static(__dirname + '/cache'));
     
     var promises = [];
     var fileContentList = new ArrayList();
-    // var fileNameList = new ArrayList();
+    var fileNameList = new ArrayList();
 
-    // fileNameList.add(['image0.jpg','image1.gif','image2.jpg','image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.png','image8.png','image9.jpg','image10.jpg','image11.jpg','image12.jpg','image13.jpg']);
+    fileNameList.add(['image0.jpg','image1.gif','image2.jpg','image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.png','image8.png','image9.jpg','image10.jpg','image11.jpg','image12.jpg','image13.jpg']);
     
     for(var i = 0; i < fileNameList.length; i++){
         promises.push(getObject(fileNameList.get(i)));
@@ -87,13 +86,9 @@ app.use('/cache', express.static(__dirname + '/cache'));
     .then(function(results) {
         for(var index in results) {
             var data = results[index];
-            fileContentList.add(data.Body);
+            fileContentList.add(data);
             //console.log(results[index]);
-
             //console.log(data.Body);
-
-   
-
         }
 
         // continue your process here
@@ -104,10 +99,10 @@ app.use('/cache', express.static(__dirname + '/cache'));
         for(var i = 0; i < fileContentList.length; i++ ) {
             //console.log(fileContentList.get(i));
 
-            var path = 'cache/image-' + i + '.jpg',
+            var path = 'cache/' + fileContentList.get(i).Filename,
          
             fs = require('fs');
-            fs.writeFileSync(path, fileContentList.get(i));        
+            fs.writeFileSync(path, fileContentList.get(i).Body);        
         }
         console.log('WRITING FILES DONE!');
 
@@ -122,9 +117,9 @@ app.use('/cache', express.static(__dirname + '/cache'));
             //var filenameArr = array[i].split(".");
             //var filename = filenameArr[0] + "-" + uuid + filenameArr[1];
 
-            content += "<div>" + i + "</div>";
+            content += "<div>" + fileContentList.get(i).Filename + "</div>";
             //content += "<img style='width: 200px;' src='http://localhost:3002/getImageFromCache?img=" + filename + "' /><br /><br />"; // using API
-            content += "<img style='width: 200px;' src='http://localhost:3003/cache/image-" + i + ".jpg' /><br /><br />"; // using static location
+            content += "<img style='width: 200px;' src='http://localhost:3003/cache/" + fileContentList.get(i).Filename + "' /><br /><br />"; // using static location
         }
 
         var html = content;
@@ -143,7 +138,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
                 //var filenameArr = array[i].split(".");
                 //var filename = filenameArr[0] + "-" + uuid + filenameArr[1];    
 
-                fs.unlink(__dirname + "/cache/image-" + i + ".jpg", function (err) {
+                fs.unlink(__dirname + "/cache/" + fileContentList.get(i).Filename, function (err) {
                     if (err) throw err;
                     // if no error, file has been deleted successfully
                     //console.log('File deleted!');
