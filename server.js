@@ -34,21 +34,55 @@ app.use('/cache', express.static(__dirname + '/cache'));
 
  // getImageFromS3
  app.get('/getImageFromS3', function(req, res) {
+    util.log('---------------------');
+    util.log('getting image from s3');
 
-    var filename = req.query.img
-    var s3 = new AWS.S3();
+    var filename = req.query.img;
 
-    var options = {
-        Bucket: 'smc-bucket1',
-        Key: filename,
-    };
+    util.log(filename);
 
-    s3.getObject(options)
-    .createReadStream()
-    .pipe(res)
-    .on('finish', function() {
-        util.log(filename + ' - downloaded OK!');
-    });    
+    if(filename != undefined) {
+        var s3 = new AWS.S3();
+
+        var options = {
+            Bucket: 'smc-bucket1',
+            Key: filename,
+        };
+
+        s3.getObject(options, function(err, data){
+            if(err) {
+                console.log(err);
+                res.send('error (not found on s3');
+            }else {
+              //var signedURL = s3.getSignedUrl('getObject', params, callback);
+              console.log('ok');
+              //res.send('ok');
+
+                s3.getObject(options)
+                .createReadStream()
+                .pipe(res)
+                .on('finish', function() {
+                    util.log(filename + ' - downloaded OK!');
+                });    
+
+           }
+        })
+
+
+        
+        // s3.getObject(options)
+        // .createReadStream()
+        // .pipe(res)
+        // .on('finish', function() {
+        //     util.log(filename + ' - downloaded OK!');
+        // });    
+
+
+
+    } else {
+        util.log('img undefined')
+        res.send('error (no img)');
+    }
 
 });
 
@@ -188,6 +222,3 @@ function writeToPdf(html, options, callback) {
 
     pdf.create(html, options).toStream(callback);
 }
-
-
-
