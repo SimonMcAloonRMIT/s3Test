@@ -224,26 +224,21 @@ function base64test(filename) {
 
 // to deploy
 //newsfeedPosts.get('/getImageFromS3Test/:img', function(req, res) {  
-app.get('/getImageFromS3Test/:img', function(req, res) {
+app.get('/getImageFromS3Test/:img', function(req, res) {  
     //AWS.config.update({ accessKeyId: S3Config.accessKeyId, secretAccessKey: S3Config.secretAccessKey });
     var file = decodeURIComponent(req.params.img);
     var s3 = new AWS.S3({});
     var options = {
-        Bucket: 'smc-bucket1', //Bucket: S3Config.bucket,
+        Bucket: 'smc-bucket1',
         Key: file
     };
-
-    util.log('downloading ' + file + '...');
 
     s3.getObject(options)
     .createReadStream()
     .on('error', error => {
         res.status(404).send('file not found, filename = ' + file + ', error = ' + error);
     })
-    .pipe(res)
-    .on('finish', function() {
-        util.log(file + ' - downloaded OK!');
-    });   
+    .pipe(res);
 });  
 
 
@@ -283,7 +278,7 @@ app.get('/getImageFromS3Test/:img', function(req, res) {
     //var fileContentList = new ArrayList();
     var fileNameList = new ArrayList();
 
-    fileNameList.add(['image0.jpg','image1.gif','image2.jpg','image3.jpg','image4.jpg','image5.jpg','image6.jpg','image7.png','image8.png','image9.jpg','image10.jpg','image11.jpg','image12.jpg','image13.jpg']);
+    fileNameList.add(['test/image0.jpg','test/image1.gif','test/image2.jpg','test/image3.jpg','test/image4.jpg','test/image5.jpg','test/image6.jpg','test/image7.png','test/image8.png','test/image9.jpg','test/image10.jpg','test/image11.jpg','test/image12.jpg','test/image13.jpg']);
     
     // for(var i = 0; i < fileNameList.length; i++){
     //     promises.push(getObject(fileNameList.get(i)));
@@ -337,7 +332,10 @@ app.get('/getImageFromS3Test/:img', function(req, res) {
         for(var i = 0; i < fileNameList.length; i++) {
 
             content += "<div>" + fileNameList.get(i) + "</div>";
-            content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3Test/" + fileNameList.get(i) + "' /><br /><br />"; // using API (s3) (NEW)
+
+            var file = encodeURIComponent(fileNameList.get(i));
+
+            content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3Test/" + file + "' /><br /><br />"; // using API (s3) (NEW)
             //content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3?img=" + fileNameList.get(i) + "' /><br /><br />"; // using API (s3)
             //content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromCache?img=" + filename + "' /><br /><br />"; // using API (file cache)
             //content += "<img style='width: 200px;' src='http://localhost:3003/cache/" + filename + "' /><br /><br />"; // using static location
