@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var AWS = require('aws-sdk');
 var fs = require('fs');
@@ -5,6 +7,9 @@ var util = require('util');
 const uuidv4 = require('uuid/v4');
 var ArrayList = require('arraylist');
 var pdf = require('html-pdf');
+var htmlencode = require('htmlencode');
+htmlencode.EncodeType = 'numerical'; 
+
 
 var app = express();
 
@@ -32,6 +37,78 @@ app.use('/cache', express.static(__dirname + '/cache'));
     res.sendFile(__dirname + "/cache/" + filename);
 });
 
+ // getImageFromS3Base64
+ app.get('/getImageFromS3Base64', function(req, res) {
+    // util.log('---------------------');
+    // util.log('getting image from s3 (base64)');
+
+    var filename = req.query.img;
+
+    util.log(filename);
+
+    // var s3 = new AWS.S3();
+
+    // var options = {
+    //     Bucket: 'smc-bucket1',
+    //     Key: filename,
+    // };
+
+    // s3.getObject(options).createReadStream().setEncoding('base64').pipe(res);
+
+
+    res.send(base64test(filename));
+});
+
+function base64test(filename) {
+    //return 'function ok';
+
+    util.log('---------------------');
+    util.log('getting image from s3 (base64)');
+
+    // var filename = req.query.img;
+
+    // util.log(filename);
+
+    var s3 = new AWS.S3();
+
+    var options = {
+        Bucket: 'smc-bucket1',
+        Key: filename,
+    };
+
+    var base64data = 'test';
+
+    s3.getObject(options, function(err, data) {
+        // Handle any error and exit
+        if (err)
+            return err;
+    
+      // No error happened
+      // Convert Body from a Buffer to a String
+        console.log('test');
+       //console.log(data);
+
+        base64data = data.Body.toString('base64');
+
+        //console.log(base64data);
+
+        util.log('return this');
+
+
+
+
+        return base64data;
+        //return 'test';
+
+
+    });    
+
+    //return base64data;
+
+    util.log('end of function');
+}
+
+
  // getImageFromS3
  app.get('/getImageFromS3', function(req, res) {
     util.log('---------------------');
@@ -55,7 +132,7 @@ app.use('/cache', express.static(__dirname + '/cache'));
                 res.send('error (not found on s3');
             }else {
               //var signedURL = s3.getSignedUrl('getObject', params, callback);
-              console.log('ok');
+              console.log(filename + ' EXISTS!');
               //res.send('ok');
 
                 s3.getObject(options)
@@ -85,6 +162,91 @@ app.use('/cache', express.static(__dirname + '/cache'));
     }
 
 });
+
+// OLD
+//  app.get('/getImageFromS3Test', function(req, res) {
+//     var filename = req.query.img;
+
+//     if(filename != undefined) {
+//         var s3 = new AWS.S3();
+//         var options = {
+//             Bucket: 'smc-bucket1',
+//             Key: filename
+//         };
+
+//         s3.getObject(options)
+//         .createReadStream()
+//         .on('error', error => {
+//             res.status(404).send('file not found');
+//         })
+//         .pipe(res);
+//     } else {
+//         res.status(500).send('invalid parameters');
+//     }
+// });
+
+// to deploy
+// app.get('/getImageFromS3Test/:img', function(req, res) {    
+//     var file = decodeURIComponent(req.params.img);
+
+//     //AWS.config.update({ accessKeyId: S3Config.accessKeyId, secretAccessKey: S3Config.secretAccessKey });
+//     var s3 = new AWS.S3({});
+//     var options = {
+//         Bucket: 'smc-bucket1',
+//         Key: file
+//     };
+
+//     s3.getObject(options)
+//     .createReadStream()
+//     .on('error', error => {
+//         res.status(404).send('file not found - filename = ' + file);
+//     })
+//     .pipe(res);
+// });  
+
+//newsfeedPosts.get('/getImageFromS3Test/:img', function(req, res) {
+// app.get('/getImageFromS3Test/:img', function(req, res) {    
+//     var file = decodeURIComponent(req.params.img);
+//     //AWS.config.update({ accessKeyId: S3Config.accessKeyId, secretAccessKey: S3Config.secretAccessKey });
+//     var s3 = new AWS.S3({});
+//     var options = {
+//         Bucket: 'smc-bucket1', //Bucket: S3Config.bucket,
+//         Key: file
+//     };
+
+//     s3.getObject(options)
+//     .createReadStream()
+//     .on('error', error => {
+//         res.status(404).send('file not found, filename = ' + file + ', error = ' + error);
+//     })
+//     .pipe(res);
+// });  
+
+// to deploy
+//newsfeedPosts.get('/getImageFromS3Test/:img', function(req, res) {  
+app.get('/getImageFromS3Test/:img', function(req, res) {
+    //AWS.config.update({ accessKeyId: S3Config.accessKeyId, secretAccessKey: S3Config.secretAccessKey });
+    var file = decodeURIComponent(req.params.img);
+    var s3 = new AWS.S3({});
+    var options = {
+        Bucket: 'smc-bucket1', //Bucket: S3Config.bucket,
+        Key: file
+    };
+
+    util.log('downloading ' + file + '...');
+
+    s3.getObject(options)
+    .createReadStream()
+    .on('error', error => {
+        res.status(404).send('file not found, filename = ' + file + ', error = ' + error);
+    })
+    .pipe(res)
+    .on('finish', function() {
+        util.log(file + ' - downloaded OK!');
+    });   
+});  
+
+
 
  app.get('/getFiles', function (req, res) {
     util.log('-------------');
@@ -175,8 +337,9 @@ app.use('/cache', express.static(__dirname + '/cache'));
         for(var i = 0; i < fileNameList.length; i++) {
 
             content += "<div>" + fileNameList.get(i) + "</div>";
-            content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3?img=" + fileNameList.get(i) + "' /><br /><br />"; // using API
-            //content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromCache?img=" + filename + "' /><br /><br />"; // using API
+            content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3Test/" + fileNameList.get(i) + "' /><br /><br />"; // using API (s3) (NEW)
+            //content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromS3?img=" + fileNameList.get(i) + "' /><br /><br />"; // using API (s3)
+            //content += "<img style='width: 200px;' src='http://localhost:3003/getImageFromCache?img=" + filename + "' /><br /><br />"; // using API (file cache)
             //content += "<img style='width: 200px;' src='http://localhost:3003/cache/" + filename + "' /><br /><br />"; // using static location
         }        
 
