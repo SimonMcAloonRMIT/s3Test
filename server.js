@@ -251,18 +251,18 @@ app.get('/getImageFromS3Test/:img', function(req, res) {
             util.log('\x1b[32m%s\x1b[0m', 'PDF generated OK! - and returned');  
 
             // clean up filess
-            util.log('Deleting cache files');
-            for(var i = 0; i < fileContentList.length; i++) {
+            // util.log('Deleting cache files');
+            // for(var i = 0; i < fileContentList.length; i++) {
 
-                var filenameArr = fileContentList.get(i).Filename.split(".");
-                var filename = filenameArr[0] + "-" + uuid + filenameArr[1]; 
+            //     var filenameArr = fileContentList.get(i).Filename.split(".");
+            //     var filename = filenameArr[0] + "-" + uuid + filenameArr[1]; 
 
-                fs.unlink(__dirname + "/cache/" + filename, function (err) {
-                    if (err) throw err;
-                    // if no error, file has been deleted successfully
-                    //console.log('File deleted!');
-                }); 
-            }    
+            //     fs.unlink(__dirname + "/cache/" + filename, function (err) {
+            //         if (err) throw err;
+            //         // if no error, file has been deleted successfully
+            //         //console.log('File deleted!');
+            //     }); 
+            // }    
         });            
 
 
